@@ -8,6 +8,12 @@ const uuid4 = require('uuid').v4;
 const uuid1 = require('uuid').v1;
 const url = require('url');
 const favorites = require('./favorites');
+let channelTransformer = {
+  computeChannelNumber: function(channel) { return channel.number },
+  transformPlaylistUrl: function(m3uUrl, channel) { return m3uUrl }
+};
+try { channelTransformer = require('./channeltransformer'); } catch { }
+const cacheTime = 1800 * 4;
 
 const plutoIPTV = {
   grabJSON: function (callback) {
@@ -23,7 +29,7 @@ const plutoIPTV = {
       let mtime = new Date(stat.mtime) / 1000;
 
       // it's under 30 mins old
-      if (now - mtime <= 1800) {
+      if (now - mtime <= cacheTime) {
         console.log("[DEBUG] Using cache.json, it's under 30 minutes old.");
 
         callback(false, fs.readJSONSync('cache.json'));
@@ -107,15 +113,17 @@ plutoIPTV.grabJSON(function (err, channels) {
       m3uUrl.search = params.toString();
       m3uUrl = m3uUrl.toString();
 
-      let slug = channel.slug;
+      let id = channel._id;
+      let channelId = `pluto-${id}`;
       let logo = channel.colorLogoPNG.path;
       let group = channel.category;
       let name = channel.name;
+      let channelNumber = channelTransformer.computeChannelNumber(channel);
 
       m3u8 =
         m3u8 +
-        `#EXTINF:0 tvg-id="${slug}" tvg-logo="${logo}" group-title="${group}", ${name}
-${m3uUrl}
+        `#EXTINF:-1 channel-id="${channelId}" tvg-id="${id}" tvg-chno="${channelNumber}" tvg-logo="${logo}" group-title="${group}", ${name}
+${channelTransformer.transformPlaylistUrl(m3uUrl, channel)}
 
 `;
 
@@ -137,10 +145,10 @@ ${m3uUrl}
     if (channel.isStitched) {
       tv.push({
         name: 'channel',
-        attrs: { id: channel.slug },
+        attrs: { id: channel._id },
         children: [
           { name: 'display-name', text: channel.name },
-          { name: 'display-name', text: channel.number },
+          { name: 'display-name', text: channelTransformer.computeChannelNumber(channel) },
           { name: 'desc', text: channel.summary },
           { name: 'icon', attrs: { src: channel.colorLogoPNG.path } },
         ],
