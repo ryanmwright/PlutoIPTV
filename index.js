@@ -13,7 +13,8 @@ let channelTransformer = {
   transformPlaylistUrl: function(m3uUrl, channel) { return m3uUrl }
 };
 try { channelTransformer = require('./channeltransformer'); } catch { }
-const cacheTime = 1800 * 4;
+const cacheTime = 30 * 60;
+const cacheFile = "/tmp/pluto-cache.json";
 
 const plutoIPTV = {
   grabJSON: function (callback) {
@@ -22,17 +23,17 @@ const plutoIPTV = {
     console.log('[INFO] Grabbing EPG...');
 
     // check for cache
-    if (fs.existsSync('cache.json')) {
-      let stat = fs.statSync('cache.json');
+    if (fs.existsSync(cacheFile)) {
+      let stat = fs.statSync(cacheFile);
 
       let now = new Date() / 1000;
       let mtime = new Date(stat.mtime) / 1000;
 
       // it's under 30 mins old
       if (now - mtime <= cacheTime) {
-        console.log("[DEBUG] Using cache.json, it's under 30 minutes old.");
+        console.log(`[DEBUG] Using cache.json, it's under ${cacheTime / 60} minutes old.`);
 
-        callback(false, fs.readJSONSync('cache.json'));
+        callback(false, fs.readJSONSync(cacheFile));
         return;
       }
     }
@@ -53,7 +54,7 @@ const plutoIPTV = {
 
     request(url, function (err, code, raw) {
       console.log('[DEBUG] Using api.pluto.tv, writing cache.json.');
-      fs.writeFileSync('cache.json', raw);
+      fs.writeFileSync(cacheFile, raw);
 
       callback(err || false, JSON.parse(raw));
       return;
@@ -237,9 +238,9 @@ ${channelTransformer.transformPlaylistUrl(m3uUrl, channel)}
     }
   );
 
-  fs.writeFileSync('epg.xml', epg);
+  fs.writeFileSync('/tmp/pluto-epg.xml', epg);
   console.log('[SUCCESS] Wrote the EPG to epg.xml!');
 
-  fs.writeFileSync('playlist.m3u8', m3u8);
+  fs.writeFileSync('/tmp/pluto-playlist.m3u8', m3u8);
   console.log('[SUCCESS] Wrote the M3U8 tuner to playlist.m3u8!');
 });
