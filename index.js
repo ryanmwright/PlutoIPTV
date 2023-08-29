@@ -238,9 +238,9 @@ ${channelTransformer.transformPlaylistUrl(m3uUrl, channel)}
     }
   );
 
-  fs.writeFileSync('/tmp/pluto-epg.xml', epg);
+  fs.writeFileSync('/etc/pluto-iptv.d/pluto-epg.xml', epg);
   console.log('[SUCCESS] Wrote the EPG to epg.xml!');
 
-  fs.writeFileSync('/tmp/pluto-playlist.m3u8', m3u8);
+  fs.writeFileSync('/etc/pluto-iptv.d/pluto-playlist.m3u8', m3u8);
   console.log('[SUCCESS] Wrote the M3U8 tuner to playlist.m3u8!');
 });
