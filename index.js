@@ -242,10 +242,13 @@ ${channelTransformer.transformPlaylistUrl(m3uUrl, channel)}
   const utcMilllisecondsSinceEpoch = now.getTime() + (now.getTimezoneOffset() * 60 * 1000);
   const utcSecondsSinceEpoch = Math.round(utcMilllisecondsSinceEpoch / 1000);
 
-  // Barf. This is the easiest way to get the XML library to add this to the root object
-  fs.writeFileSync('/etc/pluto-iptv.d/pluto-epg.xml', epg.replace("<tv>", `<tv generated-ts="${utcSecondsSinceEpoch}">`));
-  console.log('[SUCCESS] Wrote the EPG to epg.xml!');
+  const epgFile = '/etc/pluto-iptv.d/pluto-epg.xml';
+  const playlistFile = '/etc/pluto-iptv.d/pluto-playlist.m3u8';
 
-  fs.writeFileSync('/etc/pluto-iptv.d/pluto-playlist.m3u8', m3u8);
-  console.log('[SUCCESS] Wrote the M3U8 tuner to playlist.m3u8!');
+  // Barf. This is the easiest way to get the XML library to add this to the root object
+  fs.writeFileSync(epgFile, epg.replace("<tv>", `<tv generated-ts="${utcSecondsSinceEpoch}">`));
+  console.log(`[SUCCESS] Wrote the EPG to ${epgFile}!`);
+
+  fs.writeFileSync(playlistFile, m3u8);
+  console.log(`[SUCCESS] Wrote the M3U8 tuner to ${playlistFile}!`);
 });
