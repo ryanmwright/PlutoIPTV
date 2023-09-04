@@ -5,7 +5,7 @@ const channeltransformer = {
     },
     transformPlaylistUrl: function(m3uUrl, channel) {
         const channelUrl = `https://pluto.tv/en/live-tv/${channel.slug}`;
-        return `pipe:///usr/bin/env pluto-stream ${channelUrl}`;
+        return `pipe:///usr/bin/env pluto_stream ${channelUrl}`;
     }
 };
 
